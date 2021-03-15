@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
@@ -33,20 +34,14 @@ namespace ImAgent.Network
                 server = new TcpListener(Address, Port);
                 server.Start();
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("сервер успешно запущен");
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.SUCCESS, "сервер успешно запущен");
 
                 Listen();
                 ProcessServerCommands();
             }
-            catch (Exception e)
+            catch (SocketException e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА запуска сервера");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА запуска сервера", e.Message, e.StackTrace);
             }
         }
 
@@ -55,22 +50,17 @@ namespace ImAgent.Network
             new Thread(() =>
                 {
                     while (true)
-                    //while (server.Server.IsBound)
                     {
                         try
                         {
                             TcpClient client = server.AcceptTcpClient();
                             ClientHandler handler = new ClientHandler(client, this);
 
-                            Console.WriteLine("входящий " + client.Client.RemoteEndPoint.ToString());
+                            Console.WriteLine($"входящий {client.Client.RemoteEndPoint}");
                         }
-                        catch (Exception e)
+                        catch (SocketException e)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("ОШИБКА сети");
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(e.StackTrace);
-                            Console.ResetColor();
+                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА сети", e.Message, e.StackTrace);
                         }
                     }
                 }
@@ -83,17 +73,11 @@ namespace ImAgent.Network
             {
                 server.Stop();
 
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("сервер успешно остановлен");
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.SUCCESS, "сервер успешно остановлен");
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА остановки сервера");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА остановки сервера", e.Message, e.StackTrace);
             }
         }
 
@@ -111,11 +95,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА проверки доступности порта");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА проверки доступности порта", e.Message, e.StackTrace);
 
                 return false;
             }

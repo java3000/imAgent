@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Management;
 using EnumerationOptions = System.Management.EnumerationOptions;
+using static ImAgent.Helpers.Helper;
+using ImAgent.Helpers;
 
 namespace ImAgent.Module
 {
@@ -14,6 +16,8 @@ namespace ImAgent.Module
         private ManagementScope ms;
         private ConnectionOptions co;
         private EnumerationOptions eo;
+
+        //SELECT * FROM CIM_DataFile WHERE Drive = 'D:' AND Extension = 'exe'
 
         private string BaseQuery = @"SELECT * FROM CIM_DataFile WHERE {0} {1} {2}";
         private string DriveQuery = "Drive = '{0}'";
@@ -72,35 +76,35 @@ namespace ImAgent.Module
 
                 using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(ms, query, eo))
                 {
-                    ManagementObjectCollection moc = searcher.Get();
-
-                    foreach (ManagementObject obj in moc)
+                    using (ManagementObjectCollection moc = searcher.Get())
                     {
-                        FileEntity fe = new FileEntity
+                        foreach (ManagementObject obj in moc)
                         {
-                            Name = obj["FileName"].ToString().Trim(),
-                            Path = drive + obj["Path"].ToString().Trim(),
-                            DateAccessed = ManagementDateTimeConverter.ToDateTime(obj["LastAccessed"].ToString().Trim()),
-                            DateCreated = ManagementDateTimeConverter.ToDateTime(obj["CreationDate"].ToString().Trim()),
-                            DateModified = ManagementDateTimeConverter.ToDateTime(obj["LastModified"].ToString().Trim()),
-                            Size = obj["FileSize"].ToString().Trim(),
+                            FileEntity fe = new FileEntity
+                            {
+                                Name = obj["FileName"].ToString().Trim(),
+                                Path = drive + obj["Path"].ToString().Trim(),
+                                DateAccessed = ManagementDateTimeConverter.ToDateTime(obj["LastAccessed"].ToString().Trim()),
+                                DateCreated = ManagementDateTimeConverter.ToDateTime(obj["CreationDate"].ToString().Trim()),
+                                DateModified = ManagementDateTimeConverter.ToDateTime(obj["LastModified"].ToString().Trim()),
+                                Size = obj["FileSize"].ToString().Trim(),
 
-                            ApplicationName = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductName,
-                            Author = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalTrademarks,
-                            Copyright = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalCopyright,
-                            Company = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).CompanyName,
-                            Version = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductVersion,
-                            FileDescription = obj["Description"].ToString().Trim(),
-                            FileExtension = obj["Extension"].ToString().Trim(),
-                            ItemType = obj["FileType"].ToString().Trim(),
-                            Language = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).Language
-                            //SoftwareUsed = obj["FileName"].ToString().Trim()
-                        };
+                                ApplicationName = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductName,
+                                Author = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalTrademarks,
+                                Copyright = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalCopyright,
+                                Company = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).CompanyName,
+                                Version = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductVersion,
+                                FileDescription = obj["Description"].ToString().Trim(),
+                                FileExtension = obj["Extension"].ToString().Trim(),
+                                ItemType = obj["FileType"].ToString().Trim(),
+                                Language = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).Language
+                                //SoftwareUsed = obj["FileName"].ToString().Trim()
+                            };
 
-                        result.Add(fe);
-                        obj.Dispose();
+                            result.Add(fe);
+                            obj.Dispose();
+                        }
                     }
-                    moc.Dispose();
                 }
 
                 foreach (var x in result)
@@ -115,7 +119,7 @@ namespace ImAgent.Module
                     }
                     catch (Exception e)
                     {
-                        //throw;
+                        PrintConsoleMessage(MessageType.ERROR, "ОШИБКА вычисления crc32", e.Message, e.StackTrace);
                     }
 
                     x.Crc32 = hash;
@@ -123,8 +127,7 @@ namespace ImAgent.Module
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА получения данных от WMI", e.Message, e.StackTrace);
             }
             return result;
         }

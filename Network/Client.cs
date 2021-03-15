@@ -8,13 +8,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
+using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
     class Client
     {
-        private TcpClient client;       
+        private TcpClient client;
         private NetworkStream stream;
 
         public int Port { get; set; }
@@ -32,11 +32,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА сервер недоступен");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА сервер недоступен", e.Message, e.StackTrace);
             }
         }
 
@@ -58,8 +54,6 @@ namespace ImAgent.Network
             {
                 try
                 {
-                    //while (isConnected)
-                    //while (client.Connected)
                     while (true)
                     {
                         string result = "null";
@@ -68,19 +62,14 @@ namespace ImAgent.Network
 
                         try
                         {
-                            //using (StreamReader sr = new StreamReader(client.GetStream()))
-                            //{
-                                StreamReader sr = new StreamReader(client.GetStream());
-                                data = sr.ReadLine(); 
-                            //}
+                            using (StreamReader sr = new StreamReader(new NetworkStream(client.Client)))
+                            {
+                                data = sr.ReadLine();
+                            }
                         }
                         catch (Exception e)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("ОШИБКА чтения данных от сервера");
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(e.StackTrace);
-                            Console.ResetColor();
+                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА чтения данных от сервера", e.Message, e.StackTrace);
                         }
 
                         if (!string.IsNullOrEmpty(data))
@@ -91,54 +80,40 @@ namespace ImAgent.Network
                             {
                                 case "sendingjob":
 
-                                        ie = ParseCommand(client.GetStream());
+                                    NetworkStream ns = new NetworkStream(client.Client);
+                                    ie = ParseCommand(ns);
 
-                                        if (ie != null)
-                                        {
-                                            result = ExecuteCommand(ie);
-                                        }
+                                    if (ie != null)
+                                    {
+                                        result = ExecuteCommand(ie);
+                                    }
 
                                     if (!string.IsNullOrEmpty(result))
                                     {
-
                                         //TODO GOOD~~~!!!!!
                                         if (client.GetStream().CanWrite)
                                         {
-                                            byte[] msg = System.Text.Encoding.UTF8.GetBytes("readytosendresult\r\n");
+                                            byte[] msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
 
                                             try
                                             {
                                                 stream.Write(msg, 0, msg.Length);
-
-                                                Console.WriteLine("7");
                                             }
                                             catch (Exception e)
                                             {
-                                                Console.ForegroundColor = ConsoleColor.Red;
-                                                Console.WriteLine("ОШИБКА отправки команды серверу");
-                                                Console.WriteLine(e.Message);
-                                                Console.WriteLine(e.StackTrace);
-                                                Console.ResetColor();
+                                                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки команды серверу", e.Message, e.StackTrace);
                                             }
-
-                                            Console.WriteLine("8");
 
                                             //TODO GOOD~~~!!!!!
-                                            msg = System.Text.Encoding.UTF8.GetBytes(result);
+                                            msg = Encoding.UTF8.GetBytes(result);
 
                                             try
                                             {
                                                 stream.Write(msg, 0, msg.Length);
-
-                                                Console.WriteLine("9");
                                             }
                                             catch (Exception e)
                                             {
-                                                Console.ForegroundColor = ConsoleColor.Red;
-                                                Console.WriteLine("ОШИБКА отправки результатов на сервер");
-                                                Console.WriteLine(e.Message);
-                                                Console.WriteLine(e.StackTrace);
-                                                Console.ResetColor();
+                                                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки результатов на сервер", e.Message, e.StackTrace);
 
                                                 string FileName = string.Format(
                                                 "{0}{1}-{2}-{3}.csv",
@@ -147,19 +122,23 @@ namespace ImAgent.Network
                                                 DateTime.Now.ToString().Replace(":", "-"),
                                                 ie.Method);
 
-                                                CSVFile.WriteCsvFile(FileName, result);
+                                                try
+                                                {
+                                                    CSVFile.WriteCsvFile(FileName, result);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА сохранения результата в файл {FileName}", ex.Message, ex.StackTrace);
+                                                }
 
-                                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                                Console.WriteLine("данные сохранены в файл " + FileName);
-                                                Console.ResetColor();
+                                                PrintConsoleMessage(MessageType.WARNING, "данные сохранены в файл " + FileName);
                                             }
                                         }
                                     }
                                     break;
                                 default:
-                                    Console.ForegroundColor = ConsoleColor.Yellow;
-                                    Console.WriteLine("приняты непонятные данные от сервера: " + data.ToString());
-                                    Console.ResetColor();
+
+                                    PrintConsoleMessage(MessageType.WARNING, $"приняты непонятные данные от сервера: {data}");
                                     break;
                             }
                         }
@@ -167,11 +146,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА!!!");
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА!!!", e.Message, e.StackTrace);
                 }
 
             }).Start();
@@ -200,30 +175,8 @@ namespace ImAgent.Network
 
             try
             {
-                /*Stream s = client.GetStream();
-                using (StreamReader sr = new StreamReader(s))
-                {
-                    string x = "";
-                    string y = "";
-                    while (!(x = sr.ReadLine()).Equals("fff"))
-                    {
-                        y += x;
-                        Console.WriteLine(x);
-                    }
-
-                    Console.WriteLine("=================");
-                    Console.WriteLine(y);
-
-                    Stream ss = new MemoryStream(Encoding.UTF8.GetBytes(y));
-                    Console.WriteLine("00");
-                    XmlSerializer xs = new XmlSerializer(typeof(InquiryEntity));
-                    Console.WriteLine("000");
-                    result = (InquiryEntity)xs.Deserialize(ss);
-                    Console.WriteLine("0000");
-                }*/
-
                 //todo сделать нормально
-                using (StreamReader sr = new StreamReader(data))
+                using (StreamReader sr = new StreamReader(new NetworkStream(client.Client)))
                 {
                     string a = sr.ReadLine();
                     string[] b = a.Split(',');
@@ -242,11 +195,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА обработки задания");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА обработки задания", e.Message, e.StackTrace);
             }
 
             return result;
@@ -258,23 +207,14 @@ namespace ImAgent.Network
             {
                 try
                 {
-                    
-                    byte[] msg = System.Text.Encoding.UTF8.GetBytes("register\r\n");
-                    //stream.WriteAsync(msg, 0, msg.Length);
+                    byte[] msg = Encoding.UTF8.GetBytes("register\r\n");
                     stream.Write(msg, 0, msg.Length);
-                    //stream.Flush();
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("клиент успешно зарегистрировался на сервере");
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.SUCCESS, "клиент успешно зарегистрировался на сервере");
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА регистрации на сервере");
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА регистрации на сервере", e.Message, e.StackTrace);
                 }
             }
         }
@@ -285,21 +225,14 @@ namespace ImAgent.Network
             {
                 try
                 {
-                    byte[] msg = System.Text.Encoding.UTF8.GetBytes("unregister\r\n");
+                    byte[] msg = Encoding.UTF8.GetBytes("unregister\r\n");
                     stream.Write(msg, 0, msg.Length);
-                    //stream.Flush();
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("клиент отменил регистрацию на сервере");
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.SUCCESS, "клиент отменил регистрацию на сервере");
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА отмены регистрации на сервере");
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отмены регистрации на сервере", e.Message, e.StackTrace);
                 }
             }
         }
@@ -313,18 +246,12 @@ namespace ImAgent.Network
                     client.Connect(Address, Port);
                     stream = client.GetStream();
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("клиент подключился к серверу");
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.SUCCESS, "клиент подключился к серверу");
                 }
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА подключения к серверу");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА подключения к серверу", e.Message, e.StackTrace);
             }
         }
 
@@ -336,18 +263,12 @@ namespace ImAgent.Network
                 {
                     client.Close();
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("клиент отключился от сервера");
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.SUCCESS, "клиент отключился от сервера");
                 }
             }
-            catch (Exception e)
+            catch (ObjectDisposedException e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА отключения от сервера");
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отключения от сервера", e.Message, e.StackTrace);
             }
         }
 

@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Xml.Serialization;
+using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
@@ -41,11 +42,7 @@ namespace ImAgent.Network
                         }
                         catch (Exception e)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("ОШИБКА чтения данных из потока клиента " + Client.Client.RemoteEndPoint.ToString());
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(e.StackTrace);
-                            Console.ResetColor();
+                            PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА чтения данных из потока клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                         }
 
                         if (!string.IsNullOrEmpty(data))
@@ -56,9 +53,7 @@ namespace ImAgent.Network
                                     {
                                         Server.Register(this);
 
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("успешно зарегистрирован клиент: " + Client.Client.RemoteEndPoint.ToString());
-                                        Console.ResetColor();
+                                        PrintConsoleMessage(MessageType.SUCCESS, $"успешно зарегистрирован клиент: {Client.Client.RemoteEndPoint}");
 
                                         break;
                                     }
@@ -66,25 +61,20 @@ namespace ImAgent.Network
                                     {
                                         Server.Unregister(this);
 
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("успешно отменена регистрация клиента: " + Client.Client.RemoteEndPoint.ToString());
-                                        Console.ResetColor();
+                                        PrintConsoleMessage(MessageType.SUCCESS, $"успешно отменена регистрация клиента: {Client.Client.RemoteEndPoint}");
                                         break;
                                     }
-                                    
+
                                 case "readytosendresult":
-                                    
+
                                     GetJobResults();
 
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("принят результат работы от клиента от клиента: " + Client.Client.RemoteEndPoint.ToString());
-                                    Console.ResetColor();
+                                    PrintConsoleMessage(MessageType.SUCCESS, $"принят результат работы от клиента от клиента: {Client.Client.RemoteEndPoint}");
                                     break;
 
                                 default:
-                                    Console.ForegroundColor = ConsoleColor.Yellow;
-                                    Console.WriteLine(string.Format("непонятные данные от клиента {0} : {1} ", Client.Client.RemoteEndPoint.ToString(), data.ToString()));
-                                    Console.ResetColor();
+
+                                    PrintConsoleMessage(MessageType.WARNING, $"непонятные данные от клиента {Client.Client.RemoteEndPoint} : {data} ");
                                     break;
                             }
                         }
@@ -92,11 +82,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА!!!");
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА!!!", e.Message, e.StackTrace);
                 }
 
             }).Start();
@@ -115,11 +101,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА отправки подготовки к отправке задания клиенту");
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки подготовки к отправке задания клиенту", e.Message, e.StackTrace);
                 }
 
                 try
@@ -132,11 +114,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА отправки клиенту задания клиенту " + Client.Client.RemoteEndPoint.ToString());
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                 }
             }
         }
@@ -154,11 +132,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ОШИБКА отправки клиенту задания клиенту " + Client.Client.RemoteEndPoint.ToString());
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                    Console.ResetColor();
+                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                 }
             }
         }
@@ -181,11 +155,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ОШИБКА получения результатов от клиента " + Client.Client.RemoteEndPoint.ToString());
-                Console.WriteLine(e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ResetColor();
+                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА получения результатов от клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
             }
         }
     }

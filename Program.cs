@@ -89,6 +89,7 @@ namespace ImAgent
                 }
             }
 
+            //todo do it better way
             if (!isNetworkMode)
             {
                 if (!string.IsNullOrEmpty(ie.TaskFile))
@@ -148,6 +149,7 @@ namespace ImAgent
             Comparsion.Compare(ie.File1, ie.File2);
         }
 
+        //todo to string builder
         private static void ShowHelp()
         {
             string Usage = @"Для работы программы укажите необходимые аргументы.
@@ -178,7 +180,5 @@ ImAgent.exe /s[:server ip-address:port]
              И наоборот.";
             Console.WriteLine(Usage);
         }
-
-        
     }
 }
