@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ImAgent": {
+      "commandName": "Project",
+      "commandLineArgs": "/c",
+      "nativeDebugging": true
+    }
+  }
+}
