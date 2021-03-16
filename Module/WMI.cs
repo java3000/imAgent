@@ -1,16 +1,16 @@
 ﻿using ImAgent.Entities;
+using ImAgent.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
-using EnumerationOptions = System.Management.EnumerationOptions;
 using static ImAgent.Helpers.Helper;
-using ImAgent.Helpers;
+using EnumerationOptions = System.Management.EnumerationOptions;
 
 namespace ImAgent.Module
 {
-    class WMI : IFinder
+    internal class WMI : IFinder
     {
         public bool Recursive { get; set; }
         private ManagementScope ms;

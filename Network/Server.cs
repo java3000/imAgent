@@ -11,7 +11,7 @@ using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
-    class Server
+    internal class Server
     {
         public int Port { get; set; }
         public IPAddress Address { get; set; }

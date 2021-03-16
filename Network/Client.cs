@@ -12,10 +12,9 @@ using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
-    class Client
+    internal class Client
     {
         private TcpClient client;
-        private NetworkStream stream;
 
         public int Port { get; set; }
         public IPAddress Address { get; set; }
@@ -27,8 +26,7 @@ namespace ImAgent.Network
 
             try
             {
-                client = new TcpClient(Address.ToString(), Port);
-                stream = client.GetStream();
+                client = new TcpClient();
             }
             catch (Exception e)
             {
@@ -38,6 +36,7 @@ namespace ImAgent.Network
 
         public void Start()
         {
+            Connect();
             Register();
             Work();
         }
@@ -58,7 +57,6 @@ namespace ImAgent.Network
                     {
                         string result = "null";
                         string data = null;
-                        stream = client.GetStream();
 
                         try
                         {
@@ -80,8 +78,10 @@ namespace ImAgent.Network
                             {
                                 case "sendingjob":
 
-                                    NetworkStream ns = new NetworkStream(client.Client);
-                                    ie = ParseCommand(ns);
+                                    using (NetworkStream ns = new NetworkStream(client.Client))
+                                    {
+                                        ie = ParseCommand(ns);
+                                    }
 
                                     if (ie != null)
                                     {
@@ -91,48 +91,51 @@ namespace ImAgent.Network
                                     if (!string.IsNullOrEmpty(result))
                                     {
                                         //TODO GOOD~~~!!!!!
-                                        if (client.GetStream().CanWrite)
+                                        byte[] msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
+
+                                        try
                                         {
-                                            byte[] msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
+                                            using (NetworkStream ns = new NetworkStream(client.Client))
+                                            {
+                                                ns.Write(msg, 0, msg.Length);
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки команды серверу", e.Message, e.StackTrace);
+                                        }
+
+                                        //TODO GOOD~~~!!!!!
+                                        msg = Encoding.UTF8.GetBytes(result);
+
+                                        try
+                                        {
+                                            using (NetworkStream ns = new NetworkStream(client.Client))
+                                            {
+                                                ns.Write(msg, 0, msg.Length);
+                                            }
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки результатов на сервер", e.Message, e.StackTrace);
+
+                                            string FileName = string.Format(
+                                            "{0}{1}-{2}-{3}.csv",
+                                            (!string.IsNullOrEmpty(ie.OutputFolder)) ? ie.OutputFolder : "",
+                                            ie.Tasks[0].Name,
+                                            DateTime.Now.ToString().Replace(":", "-"),
+                                            ie.Method);
 
                                             try
                                             {
-                                                stream.Write(msg, 0, msg.Length);
+                                                CSVFile.WriteCsvFile(FileName, result);
                                             }
-                                            catch (Exception e)
+                                            catch (Exception ex)
                                             {
-                                                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки команды серверу", e.Message, e.StackTrace);
+                                                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА сохранения результата в файл {FileName}", ex.Message, ex.StackTrace);
                                             }
 
-                                            //TODO GOOD~~~!!!!!
-                                            msg = Encoding.UTF8.GetBytes(result);
-
-                                            try
-                                            {
-                                                stream.Write(msg, 0, msg.Length);
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки результатов на сервер", e.Message, e.StackTrace);
-
-                                                string FileName = string.Format(
-                                                "{0}{1}-{2}-{3}.csv",
-                                                (!string.IsNullOrEmpty(ie.OutputFolder)) ? ie.OutputFolder : "",
-                                                ie.Tasks[0].Name,
-                                                DateTime.Now.ToString().Replace(":", "-"),
-                                                ie.Method);
-
-                                                try
-                                                {
-                                                    CSVFile.WriteCsvFile(FileName, result);
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА сохранения результата в файл {FileName}", ex.Message, ex.StackTrace);
-                                                }
-
-                                                PrintConsoleMessage(MessageType.WARNING, "данные сохранены в файл " + FileName);
-                                            }
+                                            PrintConsoleMessage(MessageType.WARNING, "данные сохранены в файл " + FileName);
                                         }
                                     }
                                     break;
@@ -203,37 +206,37 @@ namespace ImAgent.Network
 
         private void Register()
         {
-            if (stream.CanWrite)
+            try
             {
-                try
+                using (NetworkStream ns = new NetworkStream(client.Client))
                 {
                     byte[] msg = Encoding.UTF8.GetBytes("register\r\n");
-                    stream.Write(msg, 0, msg.Length);
+                    ns.Write(msg, 0, msg.Length);
+                }
 
-                    PrintConsoleMessage(MessageType.SUCCESS, "клиент успешно зарегистрировался на сервере");
-                }
-                catch (Exception e)
-                {
-                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА регистрации на сервере", e.Message, e.StackTrace);
-                }
+                PrintConsoleMessage(MessageType.SUCCESS, "клиент успешно зарегистрировался на сервере");
+            }
+            catch (Exception e)
+            {
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА регистрации на сервере", e.Message, e.StackTrace);
             }
         }
 
         private void UnRegister()
         {
-            if (stream.CanWrite)
+            try
             {
-                try
+                using (NetworkStream ns = new NetworkStream(client.Client))
                 {
                     byte[] msg = Encoding.UTF8.GetBytes("unregister\r\n");
-                    stream.Write(msg, 0, msg.Length);
+                    ns.Write(msg, 0, msg.Length);
+                }
 
-                    PrintConsoleMessage(MessageType.SUCCESS, "клиент отменил регистрацию на сервере");
-                }
-                catch (Exception e)
-                {
-                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отмены регистрации на сервере", e.Message, e.StackTrace);
-                }
+                PrintConsoleMessage(MessageType.SUCCESS, "клиент отменил регистрацию на сервере");
+            }
+            catch (Exception e)
+            {
+                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отмены регистрации на сервере", e.Message, e.StackTrace);
             }
         }
 
@@ -244,7 +247,6 @@ namespace ImAgent.Network
                 if (!client.Connected)
                 {
                     client.Connect(Address, Port);
-                    stream = client.GetStream();
 
                     PrintConsoleMessage(MessageType.SUCCESS, "клиент подключился к серверу");
                 }

@@ -9,7 +9,7 @@ using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
 {
-    class ClientHandler
+    internal class ClientHandler
     {
         private Server Server;
         public TcpClient Client;
