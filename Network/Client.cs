@@ -8,6 +8,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Xml.Serialization;
+
 using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
@@ -55,8 +57,10 @@ namespace ImAgent.Network
                 {
                     while (true)
                     {
-                        string result = "null";
+                        //string result = "null";
+                        IList<FileEntity> res = new List<FileEntity>();
                         string data = null;
+                        byte[] msg;
 
                         try
                         {
@@ -80,23 +84,22 @@ namespace ImAgent.Network
 
                                     using (NetworkStream ns = new NetworkStream(client.Client))
                                     {
-                                        ie = ParseCommand(ns);
+                                        ie = ParseCommand();
                                     }
 
                                     if (ie != null)
                                     {
-                                        result = ExecuteCommand(ie);
+                                        res = ExecuteCommand(ie);
                                     }
 
-                                    if (!string.IsNullOrEmpty(result))
+                                    if (!string.IsNullOrEmpty("test"))
                                     {
                                         //TODO GOOD~~~!!!!!
-                                        byte[] msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
-
                                         try
                                         {
                                             using (NetworkStream ns = new NetworkStream(client.Client))
                                             {
+                                                msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
                                                 ns.Write(msg, 0, msg.Length);
                                             }
                                         }
@@ -106,13 +109,17 @@ namespace ImAgent.Network
                                         }
 
                                         //TODO GOOD~~~!!!!!
-                                        msg = Encoding.UTF8.GetBytes(result);
-
                                         try
                                         {
                                             using (NetworkStream ns = new NetworkStream(client.Client))
                                             {
-                                                ns.Write(msg, 0, msg.Length);
+
+                                                var xs = new XmlSerializer(typeof(List<FileEntity>));
+                                                xs.Serialize(ns, res);
+
+                                                //msg = Encoding.UTF8.GetBytes(result);
+                                                //ns.Write(msg, 0, msg.Length);
+                                                PrintConsoleMessage(MessageType.SUCCESS, "Результат задания передан на сервер");
                                             }
                                         }
                                         catch (Exception e)
@@ -128,7 +135,7 @@ namespace ImAgent.Network
 
                                             try
                                             {
-                                                CSVFile.WriteCsvFile(FileName, result);
+                                                CSVFile.WriteCsvFile(FileName, res);
                                             }
                                             catch (Exception ex)
                                             {
@@ -155,7 +162,7 @@ namespace ImAgent.Network
             }).Start();
         }
 
-        private string ExecuteCommand(InquiryEntity ie)
+        /*private string ExecuteCommand(InquiryEntity ie)
         {
             IList<FileEntity> res = new List<FileEntity>();
             string result = string.Empty;
@@ -169,10 +176,27 @@ namespace ImAgent.Network
 
             if (res.Count > 0) result = CSVFile.WriteCsvString(res);
 
-            return result;
+            return res; // result;
+        }*/
+
+        private List<FileEntity> ExecuteCommand(InquiryEntity ie)
+        {
+            List<FileEntity> res = new List<FileEntity>();
+            //string result = string.Empty;
+
+            if (ie.Tasks != null)
+            {
+                IFinder finder = new WMI(true, ie);
+                //todo for many tasks
+                res = finder.Search(ie.Tasks[0]);
+            }
+
+            //if (res.Count > 0) result = CSVFile.WriteCsvString(res);
+
+            return res; // result;
         }
 
-        private InquiryEntity ParseCommand(Stream data)
+        private InquiryEntity ParseCommand()
         {
             InquiryEntity result = new InquiryEntity();
 

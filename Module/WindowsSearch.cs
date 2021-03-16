@@ -39,7 +39,7 @@ namespace ImAgent.Module
             Recursive = recursive;
         }
 
-        public IList<FileEntity> Search(string where, string what, string machine)
+        public List<FileEntity> Search(string where, string what, string machine)
         {
             List<FileEntity> result = new List<FileEntity>();
 
@@ -89,8 +89,8 @@ namespace ImAgent.Module
                             }
                             catch (FileNotFoundException e)
                             {
-                                //Console.WriteLine(e.Message);
-                                //Console.WriteLine(e.StackTrace);
+                                Console.WriteLine(e.Message);
+                                Console.WriteLine(e.StackTrace);
                             }
                         }
                     }
@@ -108,7 +108,8 @@ namespace ImAgent.Module
                     }
                     catch (Exception e)
                     {
-                        //throw;
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
                     }
 
                     x.Crc32 = hash;
@@ -127,7 +128,7 @@ namespace ImAgent.Module
             return result;
         }
 
-        public IList<FileEntity> Search(TaskEntity task)
+        public List<FileEntity> Search(TaskEntity task)
         {
             //string normalisedPath = (task.Path[task.Path.Length].Equals("\\")) ? task.Path : task.Path + "\\";
             return Search(task.Path, task.Type, task.Name);

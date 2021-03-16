@@ -48,7 +48,7 @@ namespace ImAgent.Module
             };
         }
 
-        public IList<FileEntity> Search(string where, string what, string machine)
+        public List<FileEntity> Search(string where, string what, string machine)
         {
             List<FileEntity> result = new List<FileEntity>();
 
@@ -114,7 +114,7 @@ namespace ImAgent.Module
 
                     try
                     {
-                        using (var fs = File.Open(x.Path + "\\" + x.Name, FileMode.Open, FileAccess.Read))
+                        using (var fs = File.Open($"{x.Path}{x.Name}.{x.FileExtension}", FileMode.Open, FileAccess.Read))
                             foreach (byte b in crc32.ComputeHash(fs)) hash += b.ToString("x2").ToLower();
                     }
                     catch (Exception e)
@@ -132,7 +132,7 @@ namespace ImAgent.Module
             return result;
         }
 
-        public IList<FileEntity> Search(TaskEntity task)
+        public List<FileEntity> Search(TaskEntity task)
         {
             //string normalisedPath = (task.Path[task.Path.Length -1].Equals("\\")) ? task.Path : task.Path + "\\";
             //return Search(normalisedPath, task.Type, task.Name);

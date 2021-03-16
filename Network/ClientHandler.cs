@@ -1,10 +1,15 @@
 ﻿using ImAgent.Entities;
 using ImAgent.Helpers;
+
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Xml.Serialization;
+
 using static ImAgent.Helpers.Helper;
 
 namespace ImAgent.Network
@@ -141,17 +146,38 @@ namespace ImAgent.Network
         {
             try
             {
-                StreamReader sr = new StreamReader(Stream);
-                string data = sr.ReadToEnd();
+                /*string data = "";
+                //todo сделать нормально
+                NetworkStream ns = new NetworkStream(Client.Client);
+                using (StreamReader sr = new StreamReader(ns))
+                {
+                    StringBuilder sb = new StringBuilder();
+
+                    while (ns.DataAvailable)
+                    {
+                        string s = sr.ReadLine();
+                        sb.Append(s);
+                    }
+
+                    data = sb.ToString();
+                }*/
+
+
+                //TODO!!!!!!!! HOW TO STOP THIS!!!
+                NetworkStream ns = new NetworkStream(Client.Client);
+                var xs = new XmlSerializer(typeof(List<FileEntity>));
+                List<FileEntity> lfe = (List<FileEntity>) xs.Deserialize(ns);
 
                 string FileName = string.Format(
                                 "{0}{1}-{2}-{3}.csv",
-                                "",
+                                $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\",
                                 Client.Client.RemoteEndPoint.ToString().Replace(":", "-"),
                                 DateTime.Now.ToString().Replace(":", "-"),
                                 "net");
 
-                CSVFile.WriteCsvFile(FileName, data);
+                CSVFile.WriteCsvFile(FileName, lfe);
+
+                PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
             }
             catch (Exception e)
             {

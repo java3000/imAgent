@@ -7,7 +7,7 @@ namespace ImAgent.Module
     {
         public bool Recursive {get; set; }
 
-        abstract IList<FileEntity> Search(string where, string what, string machine);
-        abstract IList<FileEntity> Search(TaskEntity task);
+        abstract List<FileEntity> Search(string where, string what, string machine);
+        abstract List<FileEntity> Search(TaskEntity task);
     }
 }

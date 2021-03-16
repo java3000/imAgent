@@ -3,6 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>java3000</Authors>
+    <Company>IM</Company>
+    <PackageProjectUrl>http://www.inframanager.ru/</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

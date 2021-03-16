@@ -26,9 +26,3 @@ folders: [where to find types]
 
 см. Audit Pro и flexera
 
-c ---connect. im PCNAME --- s
-s --- ok, remember ---c
-
-
-s --- get job ----- c
-c ----ok/refuse -----s

@@ -9,12 +9,12 @@ namespace ImAgent.Module
     {
         public bool Recursive { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public IList<FileEntity> Search(string where, string what, string machine)
+        public List<FileEntity> Search(string where, string what, string machine)
         {
             throw new NotImplementedException();
         }
 
-        public IList<FileEntity> Search(TaskEntity task)
+        public List<FileEntity> Search(TaskEntity task)
         {
             throw new NotImplementedException();
         }
