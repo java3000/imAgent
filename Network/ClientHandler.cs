@@ -42,8 +42,11 @@ namespace ImAgent.Network
                     {
                         try
                         {
-                            StreamReader sr = new StreamReader(Stream);
-                            data = sr.ReadLine();
+                            using (NetworkStream ns = new NetworkStream(Client.Client))
+                            {
+                                StreamReader sr = new StreamReader(ns);
+                                data = sr.ReadLine(); 
+                            }
                         }
                         catch (Exception e)
                         {
@@ -98,7 +101,7 @@ namespace ImAgent.Network
             var xmlSerializer = new XmlSerializer(typeof(InquiryEntity));
             if (Stream.CanWrite)
             {
-                byte[] msg = System.Text.Encoding.UTF8.GetBytes("sendingjob\r\n");
+                byte[] msg = Encoding.UTF8.GetBytes("sendingjob\r\n");
 
                 try
                 {
@@ -114,7 +117,7 @@ namespace ImAgent.Network
                     StringWriter tw = new StringWriter();
                     xmlSerializer.Serialize(tw, ie);
 
-                    byte[] msg1 = System.Text.Encoding.UTF8.GetBytes(tw.ToString() + "\r\nfff\r\n");
+                    byte[] msg1 = Encoding.UTF8.GetBytes(tw.ToString() + "\r\nfff\r\n");
                     Stream.Write(msg1, 0, msg1.Length);
                 }
                 catch (Exception e)
@@ -130,9 +133,9 @@ namespace ImAgent.Network
             {
                 try
                 {
-                    byte[] msg = System.Text.Encoding.UTF8.GetBytes("sendingjob\r\n");
+                    byte[] msg = Encoding.UTF8.GetBytes("sendingjob\r\n");
                     Stream.Write(msg, 0, msg.Length);
-                    byte[] msg1 = System.Text.Encoding.UTF8.GetBytes(str + "\r\n");
+                    byte[] msg1 = Encoding.UTF8.GetBytes(str + "\r\n");
                     Stream.Write(msg1, 0, msg1.Length);
                 }
                 catch (Exception e)
@@ -146,29 +149,26 @@ namespace ImAgent.Network
         {
             try
             {
-                /*string data = "";
+                string data = "";
                 //todo сделать нормально
-                NetworkStream ns = new NetworkStream(Client.Client);
-                using (StreamReader sr = new StreamReader(ns))
+                using (NetworkStream ns = new NetworkStream(Client.Client))
                 {
-                    StringBuilder sb = new StringBuilder();
+                    StreamReader sr = new StreamReader(ns);
+                    data = sr.ReadLine();
+                }
 
-                    while (ns.DataAvailable)
-                    {
-                        string s = sr.ReadLine();
-                        sb.Append(s);
-                    }
+                using (TextReader reader = new StringReader(data))
+                {
+                    var serializer = new XmlSerializer(typeof(List<FileEntity>));
+                    var result = (List<FileEntity>)serializer.Deserialize(reader);
+                }
 
-                    data = sb.ToString();
-                }*/
+            }
+            catch (Exception e)
+            {
+                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА получения результатов от клиента11 {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
 
-
-                //TODO!!!!!!!! HOW TO STOP THIS!!!
-                NetworkStream ns = new NetworkStream(Client.Client);
-                var xs = new XmlSerializer(typeof(List<FileEntity>));
-                List<FileEntity> lfe = (List<FileEntity>) xs.Deserialize(ns);
-
-                string FileName = string.Format(
+                /*string FileName = string.Format(
                                 "{0}{1}-{2}-{3}.csv",
                                 $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\",
                                 Client.Client.RemoteEndPoint.ToString().Replace(":", "-"),
@@ -177,11 +177,7 @@ namespace ImAgent.Network
 
                 CSVFile.WriteCsvFile(FileName, lfe);
 
-                PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
-            }
-            catch (Exception e)
-            {
-                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА получения результатов от клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");*/
             }
         }
     }

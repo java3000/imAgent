@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using System.Xml.Serialization;
 
 using static ImAgent.Helpers.Helper;
@@ -58,7 +59,7 @@ namespace ImAgent.Network
                     while (true)
                     {
                         //string result = "null";
-                        IList<FileEntity> res = new List<FileEntity>();
+                        List<FileEntity> res = new List<FileEntity>();
                         string data = null;
                         byte[] msg;
 
@@ -82,17 +83,14 @@ namespace ImAgent.Network
                             {
                                 case "sendingjob":
 
-                                    using (NetworkStream ns = new NetworkStream(client.Client))
-                                    {
-                                        ie = ParseCommand();
-                                    }
+                                    ie = ParseCommand();
 
                                     if (ie != null)
                                     {
                                         res = ExecuteCommand(ie);
                                     }
 
-                                    if (!string.IsNullOrEmpty("test"))
+                                    if (res.Count > 0)
                                     {
                                         //TODO GOOD~~~!!!!!
                                         try
@@ -111,16 +109,24 @@ namespace ImAgent.Network
                                         //TODO GOOD~~~!!!!!
                                         try
                                         {
+                                            string xml;
+                                            using(var sw = new StringWriter())
+                                            {
+                                                using(XmlWriter xw = XmlWriter.Create(sw))
+                                                {
+                                                    XmlSerializer xs = new XmlSerializer(typeof(List<FileEntity>));
+                                                    xs.Serialize(xw, res);
+                                                    xml = sw.ToString();
+                                                }
+                                            }
+
                                             using (NetworkStream ns = new NetworkStream(client.Client))
                                             {
-
-                                                var xs = new XmlSerializer(typeof(List<FileEntity>));
-                                                xs.Serialize(ns, res);
-
-                                                //msg = Encoding.UTF8.GetBytes(result);
-                                                //ns.Write(msg, 0, msg.Length);
-                                                PrintConsoleMessage(MessageType.SUCCESS, "Результат задания передан на сервер");
+                                                msg = Encoding.UTF8.GetBytes(xml + "\r\n");
+                                                ns.Write(msg, 0, msg.Length);
                                             }
+
+                                            PrintConsoleMessage(MessageType.SUCCESS, "Результат задания передан на сервер");
                                         }
                                         catch (Exception e)
                                         {

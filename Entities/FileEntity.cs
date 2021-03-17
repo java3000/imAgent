@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ImAgent.Entities
 {
+    [Serializable]
     public class FileEntity : IEquatable<FileEntity>
     {
         public string Name { get; set; }
