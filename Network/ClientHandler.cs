@@ -47,7 +47,7 @@ namespace ImAgent.Network
                                 using (StreamReader sr = new StreamReader(ns))
                                 {
                                     data = sr.ReadLine();
-                                } 
+                                }
                             }
                         }
                         catch (Exception e)
@@ -155,17 +155,19 @@ namespace ImAgent.Network
                 //todo сделать нормально
                 using (NetworkStream ns = new NetworkStream(Client.Client))
                 {
-                    StreamReader sr = new StreamReader(ns);
-                    data = sr.ReadLine();
-                }
 
-                    string s = string.Empty;
-                    while (!(s = sr.ReadLine()).Equals("fff"))
+                    using (StreamReader sr = new StreamReader(ns))
                     {
-                        sb.Append(s);
-                    }
+                        string s = string.Empty;
+                        StringBuilder sb = new StringBuilder();
 
-                    data = sb.ToString();
+                        while (!(s = sr.ReadLine()).Equals("fff"))
+                        {
+                            sb.Append(s);
+                        }
+
+                        data = sb.ToString(); 
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(data))
@@ -186,7 +188,7 @@ namespace ImAgent.Network
 
                     CSVFile.WriteCsvFile(FileName, lfe);
 
-                    PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}"); 
+                    PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
                 }
                 else
                 {
