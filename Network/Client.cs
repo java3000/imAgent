@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using System.Xml.Serialization;
 
 using static ImAgent.Helpers.Helper;
@@ -58,7 +59,7 @@ namespace ImAgent.Network
                     while (true)
                     {
                         //string result = "null";
-                        IList<FileEntity> res = new List<FileEntity>();
+                        List<FileEntity> res = new List<FileEntity>();
                         string data = null;
                         byte[] msg;
 
@@ -82,17 +83,14 @@ namespace ImAgent.Network
                             {
                                 case "sendingjob":
 
-                                    using (NetworkStream ns = new NetworkStream(client.Client))
-                                    {
-                                        ie = ParseCommand();
-                                    }
+                                    ie = ParseCommand();
 
                                     if (ie != null)
                                     {
                                         res = ExecuteCommand(ie);
                                     }
 
-                                    if (!string.IsNullOrEmpty("test"))
+                                    if (res.Count > 0)
                                     {
                                         //TODO GOOD~~~!!!!!
                                         try

@@ -9,7 +9,7 @@ namespace ImAgent.Helpers
 {
     class CSVFile
     {
-        public static void WriteCsvFile(string FileName, IList<FileEntity> entities)
+        public static void WriteCsvFile(string FileName, List<FileEntity> entities)
         {
             using (var writer = new StreamWriter(FileName))
             {

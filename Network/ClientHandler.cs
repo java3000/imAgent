@@ -153,10 +153,11 @@ namespace ImAgent.Network
             {
                 string data = "";
                 //todo сделать нормально
-                NetworkStream ns = new NetworkStream(Client.Client);
-                using (StreamReader sr = new StreamReader(ns))
+                using (NetworkStream ns = new NetworkStream(Client.Client))
                 {
-                    StringBuilder sb = new StringBuilder();
+                    StreamReader sr = new StreamReader(ns);
+                    data = sr.ReadLine();
+                }
 
                     string s = string.Empty;
                     while (!(s = sr.ReadLine()).Equals("fff"))
