@@ -101,24 +101,14 @@ namespace ImAgent.Network
                                             {
                                                 msg = Encoding.UTF8.GetBytes("readytosendresult\r\n");
                                                 ns.Write(msg, 0, msg.Length);
-                                            }
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки команды серверу", e.Message, e.StackTrace);
-                                        }
-
-                                        //TODO GOOD~~~!!!!!
-                                        try
-                                        {
-                                            using (NetworkStream ns = new NetworkStream(client.Client))
-                                            {
 
                                                 var xs = new XmlSerializer(typeof(List<FileEntity>));
                                                 xs.Serialize(ns, res);
 
-                                                //msg = Encoding.UTF8.GetBytes(result);
-                                                //ns.Write(msg, 0, msg.Length);
+                                                msg = Encoding.UTF8.GetBytes("\r\nfff\r\n"); //чтобы хоть как-то остановить на другой стороне прием.
+                                                ns.Write(msg, 0, msg.Length);
+
+
                                                 PrintConsoleMessage(MessageType.SUCCESS, "Результат задания передан на сервер");
                                             }
                                         }
@@ -208,10 +198,13 @@ namespace ImAgent.Network
                     string a = sr.ReadLine();
                     string[] b = a.Split(',');
 
-                    TaskEntity t = new TaskEntity();
-                    t.Name = b[0];
-                    t.Path = b[1];
-                    t.Type = b[2];
+                    TaskEntity t = new TaskEntity
+                    {
+                        Name = b[0],
+                        Path = b[1],
+                        //todo fail with "C:\Program Files (x86)\" path
+                        Type = b[2]
+                    };
 
                     List<TaskEntity> l = new List<TaskEntity>();
                     l.Add(t);

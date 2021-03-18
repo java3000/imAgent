@@ -67,7 +67,7 @@ namespace ImAgent.Module
             return Compute(DefaultSeed, buffer);
         }
 
-        public static UInt32 Compute(UInt32 seed, byte[] buffer)
+        public static UInt32 Compute(uint seed, byte[] buffer)
         {
             return Compute(DefaultPolynomial, seed, buffer);
         }

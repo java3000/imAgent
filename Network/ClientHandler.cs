@@ -42,8 +42,13 @@ namespace ImAgent.Network
                     {
                         try
                         {
-                            StreamReader sr = new StreamReader(Stream);
-                            data = sr.ReadLine();
+                            using (NetworkStream ns = new NetworkStream(Client.Client))
+                            {
+                                using (StreamReader sr = new StreamReader(ns))
+                                {
+                                    data = sr.ReadLine();
+                                } 
+                            }
                         }
                         catch (Exception e)
                         {
@@ -98,7 +103,7 @@ namespace ImAgent.Network
             var xmlSerializer = new XmlSerializer(typeof(InquiryEntity));
             if (Stream.CanWrite)
             {
-                byte[] msg = System.Text.Encoding.UTF8.GetBytes("sendingjob\r\n");
+                byte[] msg = Encoding.UTF8.GetBytes("sendingjob\r\n");
 
                 try
                 {
@@ -114,7 +119,7 @@ namespace ImAgent.Network
                     StringWriter tw = new StringWriter();
                     xmlSerializer.Serialize(tw, ie);
 
-                    byte[] msg1 = System.Text.Encoding.UTF8.GetBytes(tw.ToString() + "\r\nfff\r\n");
+                    byte[] msg1 = Encoding.UTF8.GetBytes(tw.ToString() + "\r\nfff\r\n");
                     Stream.Write(msg1, 0, msg1.Length);
                 }
                 catch (Exception e)
@@ -130,9 +135,9 @@ namespace ImAgent.Network
             {
                 try
                 {
-                    byte[] msg = System.Text.Encoding.UTF8.GetBytes("sendingjob\r\n");
+                    byte[] msg = Encoding.UTF8.GetBytes("sendingjob\r\n");
                     Stream.Write(msg, 0, msg.Length);
-                    byte[] msg1 = System.Text.Encoding.UTF8.GetBytes(str + "\r\n");
+                    byte[] msg1 = Encoding.UTF8.GetBytes(str + "\r\n");
                     Stream.Write(msg1, 0, msg1.Length);
                 }
                 catch (Exception e)
@@ -146,38 +151,46 @@ namespace ImAgent.Network
         {
             try
             {
-                /*string data = "";
+                string data = "";
                 //todo сделать нормально
                 NetworkStream ns = new NetworkStream(Client.Client);
                 using (StreamReader sr = new StreamReader(ns))
                 {
                     StringBuilder sb = new StringBuilder();
 
-                    while (ns.DataAvailable)
+                    string s = string.Empty;
+                    while (!(s = sr.ReadLine()).Equals("fff"))
                     {
-                        string s = sr.ReadLine();
                         sb.Append(s);
                     }
 
                     data = sb.ToString();
-                }*/
+                }
 
+                if (!string.IsNullOrEmpty(data))
+                {
+                    List<FileEntity> lfe = new List<FileEntity>();
+                    using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+                    {
+                        var xs = new XmlSerializer(typeof(List<FileEntity>));
+                        lfe = (List<FileEntity>)xs.Deserialize(ms);
+                    }
 
-                //TODO!!!!!!!! HOW TO STOP THIS!!!
-                NetworkStream ns = new NetworkStream(Client.Client);
-                var xs = new XmlSerializer(typeof(List<FileEntity>));
-                List<FileEntity> lfe = (List<FileEntity>) xs.Deserialize(ns);
+                    string FileName = string.Format(
+                                    "{0}{1}-{2}-{3}.csv",
+                                    $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\",
+                                    Client.Client.RemoteEndPoint.ToString().Replace(":", "-"),
+                                    DateTime.Now.ToString().Replace(":", "-"),
+                                    "net");
 
-                string FileName = string.Format(
-                                "{0}{1}-{2}-{3}.csv",
-                                $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\",
-                                Client.Client.RemoteEndPoint.ToString().Replace(":", "-"),
-                                DateTime.Now.ToString().Replace(":", "-"),
-                                "net");
+                    CSVFile.WriteCsvFile(FileName, lfe);
 
-                CSVFile.WriteCsvFile(FileName, lfe);
-
-                PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
+                    PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}"); 
+                }
+                else
+                {
+                    PrintConsoleMessage(MessageType.SUCCESS, $"от клиента {Client.Client.RemoteEndPoint} пришли пустые данные");
+                }
             }
             catch (Exception e)
             {
