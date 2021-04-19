@@ -114,7 +114,7 @@ namespace ImAgent.Module
 
                     try
                     {
-                        using (var fs = File.Open($"{x.Path}{x.Name}.{x.FileExtension}", FileMode.Open, FileAccess.Read))
+                        using (var fs = File.Open($"{x.Path}{x.Name}.{x.FileExtension}", FileMode.Open, FileAccess.Read, FileShare.Read))
                             foreach (byte b in crc32.ComputeHash(fs)) hash += b.ToString("x2").ToLower();
                     }
                     catch (Exception e)

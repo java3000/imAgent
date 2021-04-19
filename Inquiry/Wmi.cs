@@ -60,7 +60,7 @@ namespace ImAgent.Inquiry
         {
         }
 
-        private static bool GetInfoByEDID(byte[] edid, out int width, out int height, out int inch, out string manufacturerName, out string modelName, out string serialNumber)
+        /*private static bool GetInfoByEDID(byte[] edid, out int width, out int height, out int inch, out string manufacturerName, out string modelName, out string serialNumber)
         {
             width = 0;
             height = 0;
@@ -86,7 +86,7 @@ namespace ImAgent.Inquiry
     { "SEC", "Epson" },
     { "WAC", "Wacom" },
     { "NEC", "NEC" },
-    { "CMO", "CMO" },	/* Chi Mei */
+    { "CMO", "CMO" },	*//* Chi Mei *//*
     { "BNQ", "BenQ" },
     { "ABP", "Advansys" },
     { "ACC", "Accton" },
@@ -525,6 +525,7 @@ namespace ImAgent.Inquiry
                 return null;
             }
         }
+
         private string ReadProductKey(ManagementClass wmiRegistry, uint hDefKey, string path, string parameterName)
         {
             try
@@ -729,6 +730,6 @@ namespace ImAgent.Inquiry
             if (!r) r = collect(@"SOFTWARE\Microsoft\Office\11.0\Registration\{91110409-6000-11D3-8CFE-0150048383C9}", "DigitalProductID", "Microsoft Office", "2003");
             //
             return retval;
-        }
+        }*/
     }
 }
