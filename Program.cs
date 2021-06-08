@@ -79,6 +79,12 @@ namespace ImAgent
 
                             break;
 
+                        case "h":
+                        case "?":
+
+                            ShowHelp();
+                            break;
+
                         default:
 
                             Console.WriteLine("непонятная команда");

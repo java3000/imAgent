@@ -13,6 +13,7 @@ namespace ImAgent.Module
     internal class WMI : IFinder
     {
         public bool Recursive { get; set; }
+        InquiryEntity ie;
         private ManagementScope ms;
         private ConnectionOptions co;
         private EnumerationOptions eo;
@@ -28,6 +29,8 @@ namespace ImAgent.Module
         public WMI(bool recursive, InquiryEntity ie)
         {
             Recursive = recursive;
+            this.ie = ie;
+
             co = new ConnectionOptions
             {
                 Impersonation = ImpersonationLevel.Impersonate,
@@ -35,9 +38,6 @@ namespace ImAgent.Module
                 EnablePrivileges = true,
                 Timeout = TimeSpan.MaxValue
             };
-
-            if (!string.IsNullOrEmpty(ie.UserName)) co.Username = ie.UserName;
-            if (!string.IsNullOrEmpty(ie.Password)) co.Password = ie.Password;
 
             eo = new EnumerationOptions()
             {
@@ -59,6 +59,11 @@ namespace ImAgent.Module
                 (!string.IsNullOrEmpty(path) && !path.Equals("\\")) ? string.Format(PathQuery, path.Replace(@"\", @"\\")) : "",
                 string.Format(ExtensionQuery, what));
 
+            if (!(machine.Equals(".") || machine.Equals("localhost") || machine.Equals(Environment.MachineName)))
+            {
+                if (!string.IsNullOrEmpty(ie.UserName)) co.Username = ie.UserName;
+                if (!string.IsNullOrEmpty(ie.Password)) co.Password = ie.Password;
+            }
 
             ms = new ManagementScope(@"\\", co)
             {
@@ -78,51 +83,69 @@ namespace ImAgent.Module
                 {
                     using (ManagementObjectCollection moc = searcher.Get())
                     {
-                        foreach (ManagementObject obj in moc)
+                        try
                         {
-                            FileEntity fe = new FileEntity
+                            foreach (ManagementObject obj in moc)
                             {
-                                Name = obj["FileName"].ToString().Trim(),
-                                Path = drive + obj["Path"].ToString().Trim(),
-                                DateAccessed = ManagementDateTimeConverter.ToDateTime(obj["LastAccessed"].ToString().Trim()),
-                                DateCreated = ManagementDateTimeConverter.ToDateTime(obj["CreationDate"].ToString().Trim()),
-                                DateModified = ManagementDateTimeConverter.ToDateTime(obj["LastModified"].ToString().Trim()),
-                                Size = obj["FileSize"].ToString().Trim(),
+                                FileEntity fe = new FileEntity();
+                                fe.Name = obj["FileName"].ToString().Trim();
+                                fe.Path = drive + obj["Path"].ToString().Trim();
+                                fe.DateAccessed = ManagementDateTimeConverter.ToDateTime(obj["LastAccessed"].ToString().Trim());
+                                fe.DateCreated = ManagementDateTimeConverter.ToDateTime(obj["CreationDate"].ToString().Trim());
+                                fe.DateModified = ManagementDateTimeConverter.ToDateTime(obj["LastModified"].ToString().Trim());
+                                fe.Size = obj["FileSize"].ToString().Trim();
 
-                                ApplicationName = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductName,
-                                Author = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalTrademarks,
-                                Copyright = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalCopyright,
-                                Company = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).CompanyName,
-                                Version = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductVersion,
-                                FileDescription = obj["Description"].ToString().Trim(),
-                                FileExtension = obj["Extension"].ToString().Trim(),
-                                ItemType = obj["FileType"].ToString().Trim(),
-                                Language = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).Language
-                                //SoftwareUsed = obj["FileName"].ToString().Trim()
-                            };
+                                
+                                fe.FileDescription = obj["Description"].ToString().Trim();
+                                fe.FileExtension = obj["Extension"].ToString().Trim();
+                                fe.ItemType = obj["FileType"].ToString().Trim();
 
-                            result.Add(fe);
-                            obj.Dispose();
+                                if (machine.Equals(".") || machine.Equals("localhost") || machine.Equals(Environment.MachineName))
+                                {
+                                    fe.ApplicationName = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductName;
+                                    fe.Author = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalTrademarks;
+                                    fe.Copyright = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).LegalCopyright;
+                                    fe.Company = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).CompanyName;
+                                    fe.Version = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).ProductVersion;
+                                    fe.Language = FileVersionInfo.GetVersionInfo(obj["Description"].ToString().Trim()).Language; 
+                                }
+                                else
+                                {
+                                    fe.Author = fe.Company = fe.Copyright = (obj["Manufacturer"] != null) ? obj["Manufacturer"].ToString().Trim() : "unknown";
+                                    fe.Version = (obj["Version"] != null) ? obj["Version"].ToString().Trim() : "unknown";
+                                }
+                                    //SoftwareUsed = obj["FileName"].ToString().Trim()
+
+                                result.Add(fe);
+                                obj.Dispose();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА", e.Message, e.StackTrace);
                         }
                     }
                 }
 
-                foreach (var x in result)
+                if (machine.Equals(".") || machine.Equals("localhost") || machine.Equals(Environment.MachineName))
                 {
-                    var crc32 = new Crc32();
-                    var hash = string.Empty;
-
-                    try
+                    foreach (var x in result)
                     {
-                        using (var fs = File.Open($"{x.Path}{x.Name}.{x.FileExtension}", FileMode.Open, FileAccess.Read, FileShare.Read))
-                            foreach (byte b in crc32.ComputeHash(fs)) hash += b.ToString("x2").ToLower();
-                    }
-                    catch (Exception e)
-                    {
-                        PrintConsoleMessage(MessageType.ERROR, "ОШИБКА вычисления crc32", e.Message, e.StackTrace);
-                    }
+                        var crc32 = new Crc32();
+                        var hash = string.Empty;
 
-                    x.Crc32 = hash;
+                        try
+                        {
+                            using (var fs = File.Open($"{x.Path}{x.Name}.{x.FileExtension}", FileMode.Open, FileAccess.Read, FileShare.Read))
+                                foreach (byte b in crc32.ComputeHash(fs)) hash += b.ToString("x2").ToLower();
+                        }
+                        catch (Exception e)
+                        {
+                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА вычисления crc32", e.Message, e.StackTrace);
+                        }
+
+                        x.Crc32 = hash;
+                    } 
                 }
             }
             catch (Exception e)
