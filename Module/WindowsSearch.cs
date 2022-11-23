@@ -130,7 +130,6 @@ namespace ImAgent.Module
 
         public List<FileEntity> Search(TaskEntity task)
         {
-            //string normalisedPath = (task.Path[task.Path.Length].Equals("\\")) ? task.Path : task.Path + "\\";
             return Search(task.Path, task.Type, task.Name);
         }
     }

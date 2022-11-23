@@ -34,14 +34,14 @@ namespace ImAgent.Network
                 server = new TcpListener(Address, Port);
                 server.Start();
 
-                PrintConsoleMessage(MessageType.SUCCESS, "сервер успешно запущен");
+                PrintConsoleMessage(MessageType.Success, "сервер успешно запущен");
 
                 Listen();
                 ProcessServerCommands();
             }
             catch (SocketException e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА запуска сервера", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА запуска сервера", e.Message, e.StackTrace);
             }
         }
 
@@ -60,7 +60,7 @@ namespace ImAgent.Network
                         }
                         catch (SocketException e)
                         {
-                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА сети", e.Message, e.StackTrace);
+                            PrintConsoleMessage(MessageType.Error, "ОШИБКА сети", e.Message, e.StackTrace);
                         }
                     }
                 }
@@ -73,11 +73,11 @@ namespace ImAgent.Network
             {
                 server.Stop();
 
-                PrintConsoleMessage(MessageType.SUCCESS, "сервер успешно остановлен");
+                PrintConsoleMessage(MessageType.Success, "сервер успешно остановлен");
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА остановки сервера", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА остановки сервера", e.Message, e.StackTrace);
             }
         }
 
@@ -95,7 +95,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА проверки доступности порта", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА проверки доступности порта", e.Message, e.StackTrace);
 
                 return false;
             }

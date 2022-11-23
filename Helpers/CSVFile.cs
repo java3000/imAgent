@@ -15,14 +15,7 @@ namespace ImAgent.Helpers
             {
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    try
-                    {
-                        csv.WriteRecords(entities);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                    csv.WriteRecords(entities);
                 }
             }
         }
@@ -36,17 +29,10 @@ namespace ImAgent.Helpers
                 {
                     using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                     {
-                        try
+                        var records = csv.EnumerateRecords(new TaskEntity());
+                        foreach (var r in records)
                         {
-                            var records = csv.EnumerateRecords(new TaskEntity());
-                            foreach (var r in records)
-                            {
-                                result.Add(r);
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            throw;
+                            result.Add(r);
                         }
                     }
                 }
@@ -68,14 +54,7 @@ namespace ImAgent.Helpers
             {
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    try
-                    {
-                        csv.WriteRecords(entities);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                    csv.WriteRecords(entities);
                 }
             }
             return ms;
@@ -89,14 +68,7 @@ namespace ImAgent.Helpers
             {
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    try
-                    {
-                        csv.WriteRecords(entities);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                    csv.WriteRecords(entities);
                 }
 
                 result = writer.ToString();
@@ -110,14 +82,7 @@ namespace ImAgent.Helpers
             {
                 using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
                 {
-                    try
-                    {
-                        csv.WriteRecords(data);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                    csv.WriteRecords(data);
                 }
             }
         }

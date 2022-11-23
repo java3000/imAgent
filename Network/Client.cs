@@ -33,7 +33,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА сервер недоступен", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА сервер недоступен", e.Message, e.StackTrace);
             }
         }
 
@@ -72,7 +72,7 @@ namespace ImAgent.Network
                         }
                         catch (Exception e)
                         {
-                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА чтения данных от сервера", e.Message, e.StackTrace);
+                            PrintConsoleMessage(MessageType.Error, "ОШИБКА чтения данных от сервера", e.Message, e.StackTrace);
                         }
 
                         if (!string.IsNullOrEmpty(data))
@@ -107,12 +107,12 @@ namespace ImAgent.Network
                                                 ns.Write(msg, 0, msg.Length);
 
 
-                                                PrintConsoleMessage(MessageType.SUCCESS, "Результат задания передан на сервер");
+                                                PrintConsoleMessage(MessageType.Success, "Результат задания передан на сервер");
                                             }
                                         }
                                         catch (Exception e)
                                         {
-                                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки результатов на сервер", e.Message, e.StackTrace);
+                                            PrintConsoleMessage(MessageType.Error, "ОШИБКА отправки результатов на сервер", e.Message, e.StackTrace);
 
                                             string FileName = string.Format(
                                             "{0}{1}-{2}-{3}.csv",
@@ -127,16 +127,16 @@ namespace ImAgent.Network
                                             }
                                             catch (Exception ex)
                                             {
-                                                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА сохранения результата в файл {FileName}", ex.Message, ex.StackTrace);
+                                                PrintConsoleMessage(MessageType.Error, $"ОШИБКА сохранения результата в файл {FileName}", ex.Message, ex.StackTrace);
                                             }
 
-                                            PrintConsoleMessage(MessageType.WARNING, "данные сохранены в файл " + FileName);
+                                            PrintConsoleMessage(MessageType.Warning, "данные сохранены в файл " + FileName);
                                         }
                                     }
                                     break;
                                 default:
 
-                                    PrintConsoleMessage(MessageType.WARNING, $"приняты непонятные данные от сервера: {data}");
+                                    PrintConsoleMessage(MessageType.Warning, $"приняты непонятные данные от сервера: {data}");
                                     break;
                             }
                         }
@@ -144,7 +144,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА!!!", e.Message, e.StackTrace);
+                    PrintConsoleMessage(MessageType.Error, "ОШИБКА!!!", e.Message, e.StackTrace);
                 }
 
             }).Start();
@@ -213,7 +213,7 @@ namespace ImAgent.Network
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА обработки задания", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА обработки задания", e.Message, e.StackTrace);
             }
 
             return result;
@@ -229,11 +229,11 @@ namespace ImAgent.Network
                     ns.Write(msg, 0, msg.Length);
                 }
 
-                PrintConsoleMessage(MessageType.SUCCESS, "клиент успешно зарегистрировался на сервере");
+                PrintConsoleMessage(MessageType.Success, "клиент успешно зарегистрировался на сервере");
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА регистрации на сервере", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА регистрации на сервере", e.Message, e.StackTrace);
             }
         }
 
@@ -247,11 +247,11 @@ namespace ImAgent.Network
                     ns.Write(msg, 0, msg.Length);
                 }
 
-                PrintConsoleMessage(MessageType.SUCCESS, "клиент отменил регистрацию на сервере");
+                PrintConsoleMessage(MessageType.Success, "клиент отменил регистрацию на сервере");
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отмены регистрации на сервере", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА отмены регистрации на сервере", e.Message, e.StackTrace);
             }
         }
 
@@ -263,12 +263,12 @@ namespace ImAgent.Network
                 {
                     client.Connect(Address, Port);
 
-                    PrintConsoleMessage(MessageType.SUCCESS, "клиент подключился к серверу");
+                    PrintConsoleMessage(MessageType.Success, "клиент подключился к серверу");
                 }
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА подключения к серверу", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА подключения к серверу", e.Message, e.StackTrace);
             }
         }
 
@@ -280,12 +280,12 @@ namespace ImAgent.Network
                 {
                     client.Close();
 
-                    PrintConsoleMessage(MessageType.SUCCESS, "клиент отключился от сервера");
+                    PrintConsoleMessage(MessageType.Success, "клиент отключился от сервера");
                 }
             }
             catch (ObjectDisposedException e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отключения от сервера", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА отключения от сервера", e.Message, e.StackTrace);
             }
         }
 

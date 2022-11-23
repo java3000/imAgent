@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management;
 using System.Text;
 
 namespace ImAgent.Inquiry
@@ -14,7 +15,7 @@ namespace ImAgent.Inquiry
 
         private const string MOTHERBOARD_QUERY1 = "select Product, Manufacturer, SerialNumber from Win32_BaseBoard";
         private const string MOTHERBOARD_QUERY2 = "select PrimaryBusType, SecondaryBusType from Win32_MotherboardDevice";
-        //private const string MOTHERBOARD_QUERY3 = "select BIOSVersion from Win32_BIOS";
+        private const string MOTHERBOARD_QUERY3 = "select BIOSVersion from Win32_BIOS";
         private const string MOTHERBOARD_QUERY4 = "select MemoryDevices from Win32_PhysicalMemoryArray";
         private const string MOTHERBOARD_QUERY5 = "select Name, Manufacturer from Win32_FloppyDrive";
 
@@ -60,7 +61,7 @@ namespace ImAgent.Inquiry
         {
         }
 
-        /*private static bool GetInfoByEDID(byte[] edid, out int width, out int height, out int inch, out string manufacturerName, out string modelName, out string serialNumber)
+        private static bool GetInfoByEDID(byte[] edid, out int width, out int height, out int inch, out string manufacturerName, out string modelName, out string serialNumber)
         {
             width = 0;
             height = 0;
@@ -72,11 +73,12 @@ namespace ImAgent.Inquiry
             if (edid == null || edid.Length < 126)
                 return false;
             //
-            #region manufacturerList
             //кодирование производителя
             char[] ascii = new char[] { '\0', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
             string[,] vendors = new string[,]
 {
+    #region definitions
+
     { "AUO", "AU Optronics" },
     { "AIC", "AG Neovo" },
     { "ACR", "Acer" },
@@ -86,7 +88,7 @@ namespace ImAgent.Inquiry
     { "SEC", "Epson" },
     { "WAC", "Wacom" },
     { "NEC", "NEC" },
-    { "CMO", "CMO" },	*//* Chi Mei *//*
+    { "CMO", "CMO" },	//* Chi Mei *//*
     { "BNQ", "BenQ" },
     { "ABP", "Advansys" },
     { "ACC", "Accton" },
@@ -211,8 +213,9 @@ namespace ImAgent.Inquiry
     { "WTC", "Wen Tech" },
     { "ZCM", "Zenith Data Systems" },
     { "???", "Unknown" },
-};
+}; 
             #endregion
+            
             //
             #region manufacturer by specification = 8 and 9 bytes = 3 coded symbols
             byte[] manufacturerData = new byte[2];
@@ -284,143 +287,7 @@ namespace ImAgent.Inquiry
             //
             return modelName != string.Empty;
         }
-
-        private static bool GetMonitorsFromRegistry(Device device, List<Subdevice> monitorList, InquiryObjectType iot, uint hKey, string hKeyPath, ManagementClass wmiRegistry)
-        {
-            //monitor list in @"SYSTEM\CurrentControlSet\Enum\DISPLAY"
-            //active monitors in @"SYSTEM\CurrentControlSet\Services\monitor\Enum"
-            try
-            {
-                UInt32 activeMonitorCount = 0;
-                {
-                    ManagementBaseObject inParam = wmiRegistry.GetMethodParameters("GetDWORDValue");
-                    inParam["hDefKey"] = hKey;
-                    inParam["sSubKeyName"] = hKeyPath;
-                    inParam["sValueName"] = "Count";
-                    //
-                    ManagementBaseObject outParam = wmiRegistry.InvokeMethod("GetDWORDValue", inParam, null);
-                    if ((uint)outParam["ReturnValue"] == 0)
-                        activeMonitorCount = (UInt32)outParam["uValue"]; //example: 1
-                }
-                //
-                for (int i = 0; i < activeMonitorCount; i++)
-                {
-                    string monitorPath = null;
-                    {
-                        ManagementBaseObject inParam = wmiRegistry.GetMethodParameters("GetStringValue");
-                        inParam["hDefKey"] = hKey;
-                        inParam["sSubKeyName"] = hKeyPath;
-                        inParam["sValueName"] = i.ToString();
-                        //
-                        ManagementBaseObject outParam = wmiRegistry.InvokeMethod("GetStringValue", inParam, null);
-                        if ((uint)outParam["ReturnValue"] == 0)
-                            monitorPath = outParam["sValue"] as string; //example: DISPLAY\BNQ78B2\5&2348ef14&0&UID1048833
-                    }
-                    //
-                    if (string.IsNullOrWhiteSpace(monitorPath))
-                        continue;
-                    //
-                    byte[] edid = null;
-                    {
-                        ManagementBaseObject inParam = wmiRegistry.GetMethodParameters("GetBinaryValue");
-                        inParam["hDefKey"] = hKey;
-                        inParam["sSubKeyName"] = string.Format(@"SYSTEM\CurrentControlSet\Enum\{0}\Device Parameters", monitorPath);
-                        inParam["sValueName"] = "EDID";
-                        //
-                        ManagementBaseObject outParam = wmiRegistry.InvokeMethod("GetBinaryValue", inParam, null);
-                        if ((uint)outParam["ReturnValue"] == 0)
-                            edid = outParam["uValue"] as byte[];
-                    }
-                    //
-                    if (edid == null)
-                        continue;
-                    //
-                    string serialNumber = string.Empty;
-                    string modelName = string.Empty;
-                    string manufacturerName = string.Empty;
-                    int width = 0;
-                    int height = 0;
-                    int inch = 0;
-                    //
-                    if (!GetInfoByEDID(edid, out width, out height, out inch, out manufacturerName, out modelName, out serialNumber))
-                        break; //не получили информацию
-                    //
-                    bool @new = false;
-                    Manufacturer manufacturer = Manufacturer.Get(manufacturerName, device.ProcessCache);
-                    SubdeviceModel model = SubdeviceModel.Get(InquiryObjectType.Monitor, modelName, manufacturer, device.ProcessCache, out @new);
-                    if (model == null)
-                        continue;
-                    if (@new)
-                    {
-                        if (inch > 0)
-                            ((StringParameter)model.ParameterList[Parameter.MONITOR_BANDWIDTH]).Value = inch.ToString();
-                        if (width > 0)
-                            ((Int32Parameter)model.ParameterList[Parameter.MONITOR_SCREENWIDTH]).Value = width;
-                        if (height > 0)
-                            ((Int32Parameter)model.ParameterList[Parameter.MONITOR_SCREENHEIGHT]).Value = height;
-                    }
-                    monitorList.Add(new Subdevice(model, device) { SerialNumber = serialNumber });
-                }
-                //
-                return monitorList.Count > 0;
-            }
-            catch (ManagementException)
-            {
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Logger.Info(ex, "Ошибка получения мониторов по реестру.");
-                return false;
-            }
-        }
-
-        internal override List<Subdevice> InquireMonitor(Device device)
-        {
-            List<Subdevice> retval = new List<Subdevice>();
-            //            
-            uint HKEY_LOCAL_MACHINE = unchecked((uint)0x80000002);
-            _managementScope.Path = new ManagementPath(string.Concat(@"\\", _currentHost, @"\root\default"));
-            ManagementClass wmiRegistry = new ManagementClass(_managementScope, new ManagementPath("StdRegProv"), null);
-            //
-            bool getByRegistry = GetMonitorsFromRegistry(device, retval, InquiryObjectType.Monitor, HKEY_LOCAL_MACHINE, @"SYSTEM\CurrentControlSet\Services\monitor\Enum", wmiRegistry);
-            //
-            if (!getByRegistry)
-            {
-                _managementScope.Path = new ManagementPath(string.Concat(@"\\", _currentHost, @"\root\cimv2"));
-                if (!_managementScope.IsConnected)
-                {
-                    _managementScope.Connect();
-                }
-                ObjectQuery query = new ObjectQuery("select Name, MonitorManufacturer, Bandwidth from Win32_DesktopMonitor");
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(_managementScope, query))
-                {
-                    ManagementObjectCollection objList;
-                    if (TryGetValue(searcher, out objList))
-                        foreach (ManagementObject obj in objList)
-                        {
-                            bool @new;
-                            string manufacturerName = Convert.ToString(obj["MonitorManufacturer"]).Trim();
-                            Manufacturer manufacturer = Manufacturer.Get(manufacturerName, device.ProcessCache);
-                            //
-                            string modelName = Convert.ToString(obj["Name"]).Trim();
-                            SubdeviceModel model = SubdeviceModel.Get(InquiryObjectType.Monitor, modelName, manufacturer, device.ProcessCache, out @new);
-                            if (model != null)
-                            {
-                                if (@new)
-                                {
-                                    ((StringParameter)model.ParameterList[Parameter.MONITOR_BANDWIDTH]).Value = Convert.ToString(obj["Bandwidth"]);
-                                }
-                                Subdevice monitor = new Subdevice(model, device);
-                                retval.Add(monitor);
-                            }
-                            //
-                            obj.Dispose();
-                        }
-                }
-            }
-        }
-
+        
         private static string DecodeProductKey(byte[] digitalProductId)
         {//так уж решило Microsoft (c Vista изменилось)
             if (digitalProductId == null || digitalProductId.Length < 66)
@@ -521,7 +388,6 @@ namespace ImAgent.Inquiry
             }
             catch (Exception ex)
             {
-                Logger.Info(ex, "Ошибка получения ключа лицензии.");
                 return null;
             }
         }
@@ -549,7 +415,6 @@ namespace ImAgent.Inquiry
             }
             catch (Exception ex)
             {
-                Logger.Info(ex, "Ошибка получения ключа лицензии.");
                 return null;
             }
         }
@@ -730,6 +595,6 @@ namespace ImAgent.Inquiry
             if (!r) r = collect(@"SOFTWARE\Microsoft\Office\11.0\Registration\{91110409-6000-11D3-8CFE-0150048383C9}", "DigitalProductID", "Microsoft Office", "2003");
             //
             return retval;
-        }*/
+        }
     }
 }

@@ -10,10 +10,10 @@ namespace ImAgent.Helpers
 
             switch(type)
             {
-                case MessageType.ERROR: Console.ForegroundColor = ConsoleColor.Red; break;
-                case MessageType.INFO: Console.ForegroundColor = ConsoleColor.Blue; break;
-                case MessageType.SUCCESS: Console.ForegroundColor = ConsoleColor.Green; break;
-                case MessageType.WARNING: Console.ForegroundColor = ConsoleColor.Yellow; break;
+                case MessageType.Error: Console.ForegroundColor = ConsoleColor.Red; break;
+                case MessageType.Info: Console.ForegroundColor = ConsoleColor.Blue; break;
+                case MessageType.Success: Console.ForegroundColor = ConsoleColor.Green; break;
+                case MessageType.Warning: Console.ForegroundColor = ConsoleColor.Yellow; break;
             }
 
             foreach (var item in text)

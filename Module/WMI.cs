@@ -122,7 +122,7 @@ namespace ImAgent.Module
                         }
                         catch (Exception e)
                         {
-                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА", e.Message, e.StackTrace);
+                            PrintConsoleMessage(MessageType.Error, "ОШИБКА", e.Message, e.StackTrace);
                         }
                     }
                 }
@@ -141,7 +141,7 @@ namespace ImAgent.Module
                         }
                         catch (Exception e)
                         {
-                            PrintConsoleMessage(MessageType.ERROR, "ОШИБКА вычисления crc32", e.Message, e.StackTrace);
+                            PrintConsoleMessage(MessageType.Error, "ОШИБКА вычисления crc32", e.Message, e.StackTrace);
                         }
 
                         x.Crc32 = hash;
@@ -150,7 +150,7 @@ namespace ImAgent.Module
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, "ОШИБКА получения данных от WMI", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, "ОШИБКА получения данных от WMI", e.Message, e.StackTrace);
             }
             return result;
         }

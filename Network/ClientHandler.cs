@@ -52,7 +52,7 @@ namespace ImAgent.Network
                         }
                         catch (Exception e)
                         {
-                            PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА чтения данных из потока клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
+                            PrintConsoleMessage(MessageType.Error, $"ОШИБКА чтения данных из потока клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                         }
 
                         if (!string.IsNullOrEmpty(data))
@@ -63,7 +63,7 @@ namespace ImAgent.Network
                                     {
                                         Server.Register(this);
 
-                                        PrintConsoleMessage(MessageType.SUCCESS, $"успешно зарегистрирован клиент: {Client.Client.RemoteEndPoint}");
+                                        PrintConsoleMessage(MessageType.Success, $"успешно зарегистрирован клиент: {Client.Client.RemoteEndPoint}");
 
                                         break;
                                     }
@@ -71,7 +71,7 @@ namespace ImAgent.Network
                                     {
                                         Server.Unregister(this);
 
-                                        PrintConsoleMessage(MessageType.SUCCESS, $"успешно отменена регистрация клиента: {Client.Client.RemoteEndPoint}");
+                                        PrintConsoleMessage(MessageType.Success, $"успешно отменена регистрация клиента: {Client.Client.RemoteEndPoint}");
                                         break;
                                     }
 
@@ -79,12 +79,12 @@ namespace ImAgent.Network
 
                                     GetJobResults();
 
-                                    PrintConsoleMessage(MessageType.SUCCESS, $"принят результат работы от клиента от клиента: {Client.Client.RemoteEndPoint}");
+                                    PrintConsoleMessage(MessageType.Success, $"принят результат работы от клиента от клиента: {Client.Client.RemoteEndPoint}");
                                     break;
 
                                 default:
 
-                                    PrintConsoleMessage(MessageType.WARNING, $"непонятные данные от клиента {Client.Client.RemoteEndPoint} : {data} ");
+                                    PrintConsoleMessage(MessageType.Warning, $"непонятные данные от клиента {Client.Client.RemoteEndPoint} : {data} ");
                                     break;
                             }
                         }
@@ -92,7 +92,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА!!!", e.Message, e.StackTrace);
+                    PrintConsoleMessage(MessageType.Error, "ОШИБКА!!!", e.Message, e.StackTrace);
                 }
 
             }).Start();
@@ -111,7 +111,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    PrintConsoleMessage(MessageType.ERROR, "ОШИБКА отправки подготовки к отправке задания клиенту", e.Message, e.StackTrace);
+                    PrintConsoleMessage(MessageType.Error, "ОШИБКА отправки подготовки к отправке задания клиенту", e.Message, e.StackTrace);
                 }
 
                 try
@@ -124,7 +124,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
+                    PrintConsoleMessage(MessageType.Error, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                 }
             }
         }
@@ -142,7 +142,7 @@ namespace ImAgent.Network
                 }
                 catch (Exception e)
                 {
-                    PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
+                    PrintConsoleMessage(MessageType.Error, $"ОШИБКА отправки клиенту задания клиенту {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
                 }
             }
         }
@@ -188,16 +188,16 @@ namespace ImAgent.Network
 
                     CSVFile.WriteCsvFile(FileName, lfe);
 
-                    PrintConsoleMessage(MessageType.SUCCESS, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
+                    PrintConsoleMessage(MessageType.Success, $"результат работы клиента {Client.Client.RemoteEndPoint} сохранен в файл {FileName}");
                 }
                 else
                 {
-                    PrintConsoleMessage(MessageType.SUCCESS, $"от клиента {Client.Client.RemoteEndPoint} пришли пустые данные");
+                    PrintConsoleMessage(MessageType.Success, $"от клиента {Client.Client.RemoteEndPoint} пришли пустые данные");
                 }
             }
             catch (Exception e)
             {
-                PrintConsoleMessage(MessageType.ERROR, $"ОШИБКА получения результатов от клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
+                PrintConsoleMessage(MessageType.Error, $"ОШИБКА получения результатов от клиента {Client.Client.RemoteEndPoint}", e.Message, e.StackTrace);
             }
         }
     }
